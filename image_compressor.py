@@ -1,30 +1,31 @@
 from PIL import Image, ImageFilter, ImageOps, ImageEnhance
-from tkinter.filedialog import askopenfilename, askdirectory
-import os
 import random
+import argparse
+from pathlib import Path
 
-#file_to_convert = askopenfilename()
+parser = argparse.ArgumentParser()
 
-directory_to_convert = askdirectory()
+parser.add_argument("input",type=Path, help="")
+parser.add_argument("output",type=Path, help="")
+#TODO:Implement -c argument that will count numer of images that were degraded
+parser.add_argument("-c", "--count",action="store_true", help="Number of images")
+args = parser.parse_args()
 
-directory_to_save = askdirectory()
+if not args.input.is_dir():
+    print(f"ERROR: Path {args.input} is not a directory!")
+    exit(1)
 
-#input_img = Image.open(file_to_convert)
+input_dir = args.input
+output_dir = args.output
 
-#TODO: Simple console GUI (1.degrade one, 2.degrade folder, 3.exit)
+files = [f for f in input_dir.iterdir() if f.suffix.lower() in ('.png', '.jpg', '.jpeg')]
+# print(files)
+# print(directory_to_convert)
+# print(directory_to_save)
+args.output.mkdir(parents=True, exist_ok=True)
 
-#output_img = input_img.filter(ImageFilter.GaussianBlur(1.8))
-#output_img = ImageOps.posterize(input_img, bits=2)
-#output_img = ImageOps.solarize(input_img, 150)
-#output_img = ImageEnhance.Contrast(input_img).enhance(1.7)
-
-files = [f for f in os.listdir(directory_to_convert) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-print(files)
-print(directory_to_convert)
-print(directory_to_save)
-
-for e in range(len(files)):
-    input_img = Image.open(f"{directory_to_convert}/{files[e]}")
+for plik in files:
+    input_img = Image.open(plik)
     seed = random.randrange(4)
     match seed:
         case 0:
@@ -39,4 +40,4 @@ for e in range(len(files)):
         case 3:
             output_img = ImageOps.posterize(input_img, bits=random.randint(1,2))
 
-    output_img.save(f'{directory_to_save}/changed{e}.jpg')
+    output_img.save(output_dir/plik.name)
